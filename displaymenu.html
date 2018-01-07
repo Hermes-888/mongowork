@@ -1,0 +1,105 @@
+<!doctype html>
+<html>
+    <head>
+        <meta charset="utf-8">
+        <meta http-equiv="X-UA-Compatible" content="IE=edge">
+        <meta name="description" content="">
+        <meta name="viewport" content="width=device-width, initial-scale=1">
+        <title>Job List</title>
+        <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+        <link rel="stylesheet" href="css/style.css">
+    </head>
+    <body>
+<div class="container">
+    <div class="row">
+        <div class="col-sm-3 col-md-3">
+            <div id="menus" class="panel-group" id="accordion">
+                <!-- inject menus -->
+            </div>
+        </div>
+        <div class="col-sm-9 col-md-9">
+            <div id="otherdata" class="well">
+                <h1>Accordion Menu With Icon</h1>
+                Select a job to display data here
+            </div>
+        </div>
+    </div>
+</div>
+
+        <script src="https://code.jquery.com/jquery-2.2.4.min.js"></script>
+        <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+        <script>
+            /*
+                get data, sort by location
+                add new menu panel for location
+                    add new menuItem for each job title
+                    if clicked, display job title, business, date, url, pay, other in #otherdata
+            */
+            var pst = $.get('joblist.php');
+            pst.done(function(response) {
+                var res = JSON.parse(response);
+                console.log("Response: ",res.length);//, response);
+                // sort and display
+                showMenu(res);
+            });
+            pst.fail(function(err) {
+                console.log( "error:",err.statusText, err);// keep getting ERROR
+                $('#otherdata').append('<h2>No Data Avaiable</h2>')
+            });
+            
+            function showMenu(result) {
+                var menus = [];// add to accordion menus
+                var cities = [];
+                // find cities for accodion buttons                
+                for (var i=0; i<result.length; i++) {
+                    var loc = result[i].location;
+                    if (cities.indexOf(loc) == -1) {
+                        cities.push(loc);
+                    }
+                }
+                console.log(cities.length, cities);
+                
+                for (var i=0; i<cities.length; i++) {
+                    var city = $.grep(result, function(e,n){
+                        return e.location == cities[i];
+                    });
+                    console.log(cities[i], city.length, city);
+                    menus.push(city);
+                }
+                
+                //console.log( menus.length, menus);
+                for (var i=0; i<menus.length; i++) {
+                    // add city as accordion panel title
+                    //console.log(menus[i][0].business, menus[i][0].location);
+                    var fixd = menus[i][0].location.replace(" ","-");// American-Fork
+                    $('#menus').append('<div id="m_'+i+'" class="panel panel-default"></div>');
+                    $('#m_'+i).append('<div id="mh_'+i+'" class="panel-heading"></div>');
+                    $('#mh_'+i).append('<h4 id="mht_'+i+'" class="panel-title"></h4>');
+                    $('#mht_'+i).append('<a data-toggle="collapse" data-parent="#accordion" href="#'+fixd+'"><span class="glyphicon glyphicon-list"></span> '+menus[i][0].location+'</a>');
+                    
+                    $('#m_'+i).append('<div id="'+fixd+'" class="panel-collapse collapse"><div id="mb_'+i+'" class="panel-body">');
+                    // add jobs in city to panel
+                    for (var m=0; m<menus[i].length; m++) {
+                        $('<span class="glyphicon glyphicon-file text-info"></span> <a id="'+i+'_'+m+'" href="#">'+menus[i][m].title+'</a><hr>').appendTo('#mb_'+i);
+                        $('#'+i+'_'+m).click( function(e) {
+                            e.preventDefault(); 
+                            /*your_code_here;*/
+                            var arr = $(this).attr('id').split('_');
+                            // display menus[i][m] data
+                            console.log('arr:', arr, menus[arr[0]][arr[1]]);
+                            var job = menus[arr[0]][arr[1]];
+                            $('#otherdata').empty();
+                            $('#otherdata').append('<h1>'+job.title+'</h1>')
+                                    .append('<div><strong>'+job.business+' in '+job.location+'</strong>')
+                                    .append('<br>Application Date: '+job.date+' Pay: '+job.pay)
+                                    .append('<br>URL: <a href="'+job.url+'" target="_blank">Job Description</a>')
+                                    .append('<br>Info: '+job.other+'</div>');
+                            
+                            return false; 
+                        });
+                    }
+                }
+            }
+        </script>
+    </body>
+</html>

@@ -1,0 +1,124 @@
+<?php
+    require 'dbconnect.php';// $connection
+    
+    if (!empty($_POST)) {
+    //if(isset($_POST['submit'])) {
+        $dbname = 'jobs';//'test';//  database
+        $tbl = 'joblist';//'users';// collection
+        $entry = array(
+            'business' => $_POST["busName"],
+            'title' => $_POST["jobTitle"],
+            'location' => $_POST["location"],
+            'url' => $_POST["webAddr"],
+            'date' => $_POST["date"],
+            'pay' => $_POST["pay"],
+            'other' => $_POST["other"]
+        );// document
+
+        $collection = $connection->$dbname->$tbl;
+        // Insert this new document into the collection
+        //$collection->insertOne($entry);
+        try {
+            //$manager->executeBulkWrite('db.collection', $bulk);
+            $collection->insertOne($entry);
+        } catch(MongoDB\Driver\Exception\BulkWriteException $e) {
+            var_dump($e->getWriteResult()->getWriteErrors()[0]->getMessage());
+        }
+        
+        //header('Location:' . $_SERVER['PHP_SELF']);
+        //echo $entry;
+        //die();
+    }
+?>
+<!doctype html>
+<html>
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Job Tracking</title>
+    <link href="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-BVYiiSIFeK1dGmJRAkycuHAHRg32OmUcww7on3RYdg4Va+PmSTsz/K68vbdEjh4u" crossorigin="anonymous">
+    
+</head>
+<body>
+    <div class="container-fluid">
+    <div class="row">
+        <div class="col-sm-3"></div>
+        <div class="col-sm-7 text-left">
+            <br>
+            <form id="needs-validation" novalidate method="post" action='<?php echo htmlspecialchars($_SERVER["PHP_SELF"]); ?>' >
+                <!--jobTitle, busName, location, webAddr, other, date-->
+                Job Title: <input id="jobTitle" name="jobTitle" type="text" class="form-control" />
+                <br>Business Name: <input id="busName" name="busName" type="text" class="form-control" />
+                <br>Location: <input id="location" name="location" type="text" class="form-control" />
+                <br>Application URL: <input id="webAddr" name="webAddr" type="text" class="form-control" />
+                <br>Pay: <input id="pay" name="pay" type="text" class="form-control" />
+                <br>Application Date: <input id="date" name="date" type="date" class="form-control" />
+                <br>Other Information: <textarea id="other" name="other" type="text" class="form-control"></textarea>
+                
+                <br><button id="addit" nane="submit" value="submit" type="submit" class="btn btn-primary">Add Job Entry</button>
+                
+                <!-- div class="form-row">
+                <div class="col-md-6 mb-3">
+                  <label for="validationCustom03">City</label>
+                  <input type="text" class="form-control" id="validationCustom03" placeholder="City" required>
+                  <div class="invalid-feedback">
+                    Please provide a valid city.
+                  </div>
+                </div>
+                <div class="col-md-3 mb-3">
+                  <label for="validationCustom04">State</label>
+                  <input type="text" class="form-control" id="validationCustom04" placeholder="State" required>
+                  <div class="invalid-feedback">
+                    Please provide a valid state.
+                  </div>
+                </div>
+                <div class="col-md-3 mb-3">
+                  <label for="validationCustom05">Zip</label>
+                  <input type="text" class="form-control" id="validationCustom05" placeholder="Zip" required>
+                  <div class="invalid-feedback">
+                    Please provide a valid zip.
+                  </div>
+                </div>
+                </div -->
+            </form>
+        </div>
+        <div class="col-sm-2"></div>
+    </div>
+    </div>
+    <script src="https://code.jquery.com/jquery-2.2.4.min.js"></script>
+    <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
+    <script>
+    window.addEventListener('load', function() {
+        /*
+        var form = document.getElementById('needs-validation');
+        form.addEventListener('submit', function(event) {
+            console.log('submit clicked');//nope
+          if (form.checkValidity() === false) {
+            event.preventDefault();
+            event.stopPropagation();
+              
+          }
+          form.classList.add('was-validated');
+            // if valid?  jobtrack.php
+            $.post('jobtrack.php', $("#needs-validation").serialize(), formdone);
+        }, false);
+        */
+        /* keep getting ERROR
+        $('#addit').on('click', function(e){
+            var fields = $("#needs-validation").serialize();
+            console.log('fields:', fields);
+            var pst = $.post('jobtrack.php', fields);
+            pst.done(function(response) {
+                console.log("Response: ",response);
+            })
+            .fail(function(err) {
+                console.log( "error:",err.statusText);// keep getting ERROR
+            });
+            console.log('submit clicked');
+        });
+        */
+    }, false);
+    </script>
+</body>
+</html>
