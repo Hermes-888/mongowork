@@ -10,22 +10,50 @@
         <link rel="stylesheet" href="css/style.css">
     </head>
     <body>
-<div class="container">
-    <div class="row">
-        <div class="col-sm-3 col-md-3">
-            <div id="menus" class="panel-group" id="accordion">
-                <!-- inject menus -->
+        <div class="container">
+            <div class="row">
+                <div class="col-sm-3 col-md-3">
+                    <div id="menus" class="panel-group" id="accordion">
+                        <!-- inject menus -->
+                    </div>
+                </div>
+                <div class="col-sm-9 col-md-9">
+                    <div id="otherdata" class="well">
+                        <h1>Accordion Menu With Icon</h1>
+                        Select a job to display data here
+                    </div>
+                    <button type="button" class="btn btn-primary btn-lg" data-toggle="modal" data-target="#addModal">Add A Job</button>
+                </div>
             </div>
         </div>
-        <div class="col-sm-9 col-md-9">
-            <div id="otherdata" class="well">
-                <h1>Accordion Menu With Icon</h1>
-                Select a job to display data here
-            </div>
-        </div>
-    </div>
-</div>
-
+        <!-- Add Job Modal -->
+        <div id="addModal" class="modal fade" tabindex="-1" role="dialog">
+          <div class="modal-dialog" role="document">
+            <div class="modal-content">
+              <div class="modal-header">
+                <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
+                <h4 class="modal-title">Modal title</h4>
+              </div>
+              <div class="modal-body">
+                  <form id="needs-validation" method="post" action="" >
+                    <!--jobTitle, busName, location, webAddr, other, date-->
+                    Job Title: <input id="jobTitle" name="jobTitle" type="text" class="form-control" />
+                    <br>Business Name: <input id="busName" name="busName" type="text" class="form-control" />
+                    <br>Location: <input id="location" name="location" type="text" class="form-control" />
+                    <br>Application URL: <input id="webAddr" name="webAddr" type="text" class="form-control" />
+                    <br>Pay: <input id="pay" name="pay" type="text" class="form-control" />
+                    <br>Application Date: <input id="date" name="date" type="date" class="form-control" />
+                    <br>Other Information: <textarea id="other" name="other" type="text" class="form-control"></textarea>
+                  </form>
+              </div>
+              <div class="modal-footer">
+                <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary" id="addit">Save changes</button>
+              </div>
+            </div><!-- /.modal-content -->
+          </div><!-- /.modal-dialog -->
+        </div><!-- /.modal -->
+        
         <script src="https://code.jquery.com/jquery-2.2.4.min.js"></script>
         <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
         <script>
@@ -34,6 +62,7 @@
                 add new menu panel for location
                     add new menuItem for each job title
                     if clicked, display job title, business, date, url, pay, other in #otherdata
+                Use a modal with form to Add jobs
             */
             var pst = $.get('joblist.php');
             pst.done(function(response) {
@@ -57,7 +86,7 @@
                         cities.push(loc);
                     }
                 }
-                console.log(cities.length, cities);
+                console.log('cities', cities.length, cities);
                 
                 for (var i=0; i<cities.length; i++) {
                     var city = $.grep(result, function(e,n){
@@ -80,7 +109,8 @@
                     $('#m_'+i).append('<div id="'+fixd+'" class="panel-collapse collapse"><div id="mb_'+i+'" class="panel-body">');
                     // add jobs in city to panel
                     for (var m=0; m<menus[i].length; m++) {
-                        $('<span class="glyphicon glyphicon-file text-info"></span> <a id="'+i+'_'+m+'" href="#">'+menus[i][m].title+'</a><hr>').appendTo('#mb_'+i);
+                        $('<span class="glyphicon glyphicon-file text-info"></span> <a id="'+i+'_'+m+'" href="#">'+menus[i][m].title+'</a>').appendTo('#mb_'+i);
+                        if (m<menus[i].length) { $('<hr>').appendTo('#mb_'+i); }
                         $('#'+i+'_'+m).click( function(e) {
                             e.preventDefault(); 
                             /*your_code_here;*/
@@ -100,6 +130,21 @@
                     }
                 }
             }
+            
+            // save button in modal
+            $('#addit').on('click', function(e){
+                var fields = $("#needs-validation").serialize();
+                //console.log('fields:', fields);
+                $('#addModal').modal('toggle');
+                var pst = $.post('jobtrack.php', $("#needs-validation").serialize());
+                pst.done(function(response) {
+                    console.log("Response: ",response);
+                });
+                pst.fail(function(err) {
+                    console.log( "error:",err.statusText, err);// keep getting ERROR
+                });
+                console.log('submit clicked');
+            });
         </script>
     </body>
 </html>

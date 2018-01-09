@@ -1,19 +1,20 @@
 <?php
     /*
         https://docs.mongodb.com/php-library/current/tutorial/crud/
-        
+        retrieve all documents in collection
     */
     require 'dbconnect.php';
-//var_dump($dbs);
+    //var_dump($dbs);
 
     $dbname = 'jobs';//'test';//document
     $tbl = 'joblist';//'users';
     $collection = $connection->$dbname->$tbl;
-    
-    //echo "<br><br>Count: ";
-    //echo $collection->count();
         
     $cursor = $collection->find();
+
+    /*
+        put the documents in a new array
+    */
     $entry = array();
     foreach ( $cursor as $id => $value )
     {
@@ -29,13 +30,10 @@
         array_push($entry, $value);
     }
     
-    
-//    $document = $collection->findOne(['business' => 'Jolt']);// first one or where
-//    echo '<br><br>encoded: '.json_encode($document);
-    // Sort the multidimensional array
-     usort($entry, "custom_sort");
+    // Sort the multidimensional array by location
+     usort($entry, "sortByLocation");
      // Define the custom sort function
-     function custom_sort($a,$b) {
+     function sortByLocation($a, $b) {
           return $a['location']>$b['location'];
      }
     echo json_encode($entry);
