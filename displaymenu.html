@@ -22,7 +22,8 @@
                         <h1>Accordion Menu With Icon</h1>
                         Select a job to display data here
                     </div>
-                    <button type="button" class="btn btn-primary btn-lg" data-toggle="modal" data-target="#addModal">Add A Job</button>
+                    <button id="addit" type="button" class="btn btn-primary btn-lg" data-toggle="modal" data-target="#addModal"><span class="glyphicon glyphicon-plus"></span> Add A Job</button>
+                    <button id="editit" type="button" class="btn btn-primary btn-lg" data-toggle="modal" data-target="#addModal"><span class="glyphicon glyphicon-pencil"></span> Edit Entry</button>
                 </div>
             </div>
         </div>
@@ -32,7 +33,7 @@
             <div class="modal-content">
               <div class="modal-header">
                 <button type="button" class="close" data-dismiss="modal" aria-label="Close"><span aria-hidden="true">&times;</span></button>
-                <h4 class="modal-title">Modal title</h4>
+                <h4 class="modal-title">Add A Job</h4>
               </div>
               <div class="modal-body">
                   <form id="needs-validation" method="post" action="" >
@@ -44,11 +45,13 @@
                     <br>Pay: <input id="pay" name="pay" type="text" class="form-control" />
                     <br>Application Date: <input id="date" name="date" type="date" class="form-control" />
                     <br>Other Information: <textarea id="other" name="other" type="text" class="form-control"></textarea>
+                    <input id="oid" name="oid" type="text" class="form-control" />
+                    <input id="toggle" name="toggle" type="checkbox" checked="checked" value="" />
                   </form>
               </div>
               <div class="modal-footer">
                 <button type="button" class="btn btn-default" data-dismiss="modal">Close</button>
-                <button type="button" class="btn btn-primary" id="addit">Save changes</button>
+                <button type="button" class="btn btn-primary" id="saveit">Save Changes</button>
               </div>
             </div><!-- /.modal-content -->
           </div><!-- /.modal-dialog -->
@@ -58,12 +61,17 @@
         <script src="https://maxcdn.bootstrapcdn.com/bootstrap/3.3.7/js/bootstrap.min.js"></script>
         <script>
             /*
-                get data, sort by location
-                add new menu panel for location
-                    add new menuItem for each job title
+                get data, sorted by location
+                add new menu panel for each location
+                    add new menuIteml ink for each job title
                     if clicked, display job title, business, date, url, pay, other in #otherdata
                 Use a modal with form to Add jobs
+                
+                option to sort by week?
             */
+            $('#editit, #oid, #toggle').hide();
+            var job = {};//global object stores selected document
+            
             var pst = $.get('joblist.php');
             pst.done(function(response) {
                 var res = JSON.parse(response);
@@ -81,9 +89,8 @@
                 var cities = [];
                 // find cities for accodion buttons                
                 for (var i=0; i<result.length; i++) {
-                    var loc = result[i].location;
-                    if (cities.indexOf(loc) == -1) {
-                        cities.push(loc);
+                    if (cities.indexOf(result[i].location) == -1) {
+                        cities.push(result[i].location);
                     }
                 }
                 console.log('cities', cities.length, cities);
@@ -112,12 +119,15 @@
                         $('<span class="glyphicon glyphicon-file text-info"></span> <a id="'+i+'_'+m+'" href="#">'+menus[i][m].title+'</a>').appendTo('#mb_'+i);
                         if (m<menus[i].length) { $('<hr>').appendTo('#mb_'+i); }
                         $('#'+i+'_'+m).click( function(e) {
-                            e.preventDefault(); 
+                            e.preventDefault();
+                            $('#editit').show();
+                            $('#toggle').prop( "checked", true );
                             /*your_code_here;*/
                             var arr = $(this).attr('id').split('_');
                             // display menus[i][m] data
                             console.log('arr:', arr, menus[arr[0]][arr[1]]);
-                            var job = menus[arr[0]][arr[1]];
+                            job = menus[arr[0]][arr[1]];
+                            // add arr[0], arr[1] to job?
                             $('#otherdata').empty();
                             $('#otherdata').append('<h1>'+job.title+'</h1>')
                                     .append('<div><strong>'+job.business+' in '+job.location+'</strong>')
@@ -125,25 +135,75 @@
                                     .append('<br>URL: <a href="'+job.url+'" target="_blank">Job Description</a>')
                                     .append('<br>Info: '+job.other+'</div>');
                             
-                            return false; 
+                            return true; 
                         });
                     }
                 }
+            // end showMenu
             }
             
-            // save button in modal
-            $('#addit').on('click', function(e){
-                var fields = $("#needs-validation").serialize();
+            /*
+                Add A New Job entry
+                clear form fields
+                set checkbox to toggle insert
+            */
+            $('#addit').click( function(e) {
+                console.log('addit:');
+                $('#jobTitle').val("");
+                $('#busName').val("");
+                $('#location').val("");
+                $('#webAddr').val("");
+                $('#pay').val("");
+                $('#date').val("");
+                $('#other').val("");
+                $('#oid').val("");
+                $('.modal-title').html('Add A New Job Entry');
+                $('#toggle').prop( "checked", true );
+                //$('#toggle').val(true);
+                //$('#addModal').modal('toggle');
+                return true;// open modal
+            });
+            
+            /*
+                Edit Job Entry
+                place selected job document in form
+                set checkbox to toggle save
+            */
+            $('#editit').click( function(e) {
+                console.log('job:', job);
+                $('#jobTitle').val(job.title);
+                $('#busName').val(job.business);
+                $('#location').val(job.location);
+                $('#webAddr').val(job.url);
+                $('#pay').val(job.pay);
+                $('#date').val(job.date);
+                $('#other').val(job.other);
+                $('#oid').val(job._id.$oid);// for updateOne
+                $('.modal-title').html('Edit This Job Entry');
+                $('#toggle').prop( "checked", false );
+                //$('#toggle').val(false);
+                // hidden _id
+                //$('#addModal').modal('toggle');
+                return true;// open modal
+            });
+            
+            /* Save Changes button in modal
+                #toggle checkbox determines
+                true = insertOne
+                false = update selected _id
+            */
+            $('#saveit').on('click', function(e){
+                //var fields = $("#needs-validation").serialize();
                 //console.log('fields:', fields);
-                $('#addModal').modal('toggle');
+                $('#addModal').modal('toggle');// close
                 var pst = $.post('jobtrack.php', $("#needs-validation").serialize());
                 pst.done(function(response) {
                     console.log("Response: ",response);
+                    // if edit, update menus array?
                 });
                 pst.fail(function(err) {
-                    console.log( "error:",err.statusText, err);// keep getting ERROR
+                    console.log( "error:",err.statusText, err);
                 });
-                console.log('submit clicked');
             });
         </script>
     </body>

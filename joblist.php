@@ -9,8 +9,7 @@
     $dbname = 'jobs';//'test';//document
     $tbl = 'joblist';//'users';
     $collection = $connection->$dbname->$tbl;
-        
-    $cursor = $collection->find();
+    $cursor = $collection->find();// all
 
     /*
         put the documents in a new array
@@ -30,7 +29,7 @@
         array_push($entry, $value);
     }
     
-    // Sort the multidimensional array by location
+    // Sort the array of objects by location
      usort($entry, "sortByLocation");
      // Define the custom sort function
      function sortByLocation($a, $b) {

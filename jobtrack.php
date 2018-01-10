@@ -25,16 +25,28 @@
         'other' => $_POST["other"]
     );// document
     
-    //$connection = new MongoDB\Client("mongodb://localhost:27017");
     $collection = $connection->$dbname->$tbl;
-    //$collection = (new MongoDB\Client)->$dbname->$tbl;// navigation topology was destroyed
-    // Insert this new document into the collection
-    //$collection->insertOne($entry);
-
+    
     try {
-        $collection->insertOne($entry);
-        //echo json_encode($entry);
-        echo "completed";
+        if (isset($_POST['toggle'])) {
+            // Insert this new document into the collection
+            $collection->insertOne($entry);
+            //echo json_encode($entry);
+            echo "insert one";
+        } else {
+            //find by _id 
+            // http://php.net/manual/en/class.mongodb-bson-objectid.php
+            
+// https://stackoverflow.com/questions/34474248/mongodb-php7-update-document-by-id
+//collection->updateOne(['_id' => new \MongoDB\BSON\ObjectID('567eba6ea0b67b21dc004687')], ['$set' => ['some_property' => 'some_value']]);
+            $document = $collection->updateOne(
+                ["_id" => new MongoDB\BSON\ObjectID($_POST['oid'])],
+                ['$set' => $entry]
+            );// not returned
+            
+            $document = $collection->findOne(["_id" => new MongoDB\BSON\ObjectID($_POST['oid'])]);
+            echo "saved ". json_encode($document);
+        }
 
     } catch(MongoDB\Driver\Exception\BulkWriteException $e) {
         echo json_encode($e->getWriteResult()->getWriteErrors()[0]->getMessage());
